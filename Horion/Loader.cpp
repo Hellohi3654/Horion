@@ -14,14 +14,14 @@ DWORD WINAPI keyThread(LPVOID lpParam) {
 	logF("Key thread started");
 
 	bool* keyMap = static_cast<bool*>(malloc(0xFF * 4 + 0x4));
-	if (keyMap == 0)
+	if (keyMap == nullptr)
 		throw std::exception("Keymap not allocated");
 
-	uintptr_t clickMap = reinterpret_cast<uintptr_t>(malloc(5));
+	auto clickMap = reinterpret_cast<uintptr_t>(malloc(5));
 	if (clickMap == 0)
 		throw std::exception("Clickmap not allocated");
 
-	bool* keyMapAddr = 0x0;
+	bool* keyMapAddr = nullptr;
 	uintptr_t sigOffset = FindSignature("48 8D 0D ?? ?? ?? ?? 89 1C 81 48");
 	if (sigOffset != 0x0) {
 		int offset = *reinterpret_cast<int*>((sigOffset + 3));                                   // Get Offset from code
@@ -52,14 +52,14 @@ DWORD WINAPI keyThread(LPVOID lpParam) {
 			}
 		}
 
-		if (*hidController != 0) {
+		if (*hidController != nullptr) {
 			for (uintptr_t key = 0; key < 5; key++) {
 				bool newKey = (*hidController)->clickMap[key];
 				bool* oldKey = reinterpret_cast<bool*>(clickMap + key);
 				if (newKey != *oldKey) {
 					ClickGui::onMouseClickUpdate((int)key, newKey);
 					HImGui.onMouseClickUpdate((int)key, newKey);
-					if (newKey == true) {
+					if (newKey) {
 						if ((int)key == 0)
 							g_Data.leftclickCount++;
 						else if ((int)key == 1)
@@ -76,7 +76,7 @@ DWORD WINAPI keyThread(LPVOID lpParam) {
 		Sleep(2);
 	}
 	logF("Stopping Threads...");
-	g_Data.terminate();
+	GameData::terminate();
 	Sleep(200);  // Give the threads a bit of time to exit
 
 	FreeLibraryAndExitThread(static_cast<HMODULE>(lpParam), 1);  // Uninject
@@ -103,8 +103,8 @@ DWORD WINAPI injectorConnectionThread(LPVOID lpParam) {
 
 	logF("Magic array at %llX", magicArray);
 
-	MemoryBoi** horionToInjectorPtr = reinterpret_cast<MemoryBoi**>(magicArray + sizeof(magicValues));
-	MemoryBoi** injectorToHorionPtr = reinterpret_cast<MemoryBoi**>(magicArray + sizeof(magicValues) + sizeof(uintptr_t));
+	auto** horionToInjectorPtr = reinterpret_cast<MemoryBoi**>(magicArray + sizeof(magicValues));
+	auto** injectorToHorionPtr = reinterpret_cast<MemoryBoi**>(magicArray + sizeof(magicValues) + sizeof(uintptr_t));
 
 	*horionToInjectorPtr = new MemoryBoi();
 	MemoryBoi* horionToInjector = *horionToInjectorPtr;
@@ -329,7 +329,9 @@ DWORD WINAPI start(LPVOID lpParam) {
 	logF("Starting up...");
 	logF("MSC v%i at %s", _MSC_VER, __TIMESTAMP__);
 
-	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)injectorConnectionThread, lpParam, NULL, NULL);
+	DWORD conThread;
+	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)injectorConnectionThread, lpParam, NULL, &conThread);
+	logF("InjCon: %i", conThread);
 	init();
 
 	DWORD procId = GetCurrentProcessId();
@@ -340,12 +342,15 @@ DWORD WINAPI start(LPVOID lpParam) {
 	gameModule = mem.GetModule(L"Minecraft.Windows.exe");  // Get Module for Base Address
 
 	MH_Initialize();
+	g_Data.checkGameVersion();
 	GameData::initGameData(gameModule, &mem, (HMODULE)lpParam);
 	Target::init(g_Data.getPtrLocalPlayer());
 
 	Hooks::Init();
 
-	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)keyThread, lpParam, NULL, NULL);  // Checking Keypresses
+	DWORD keyThreadId;
+	CreateThread(nullptr, NULL, (LPTHREAD_START_ROUTINE)keyThread, lpParam, NULL, &keyThreadId);  // Checking Keypresses
+	logF("KeyT: %i", keyThreadId);
 
 	logF("Waiting for injector");
 	while (!g_Data.isInjectorConnectionActive()) {

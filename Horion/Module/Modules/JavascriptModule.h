@@ -21,4 +21,6 @@ public:
 	virtual void onTick(C_GameMode* gm) override;
 	void onEnable() override;
 	void onDisable() override;
+	void onLevelRender() override;
+	void onPreRender(C_MinecraftUIRenderContext* renderCtx) override;
 };

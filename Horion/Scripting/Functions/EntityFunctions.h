@@ -38,8 +38,13 @@ public:
 
 	DECL_FUN(isValid);
 	DECL_FUN(getPosition);
+	DECL_FUN(getInterpolatedPosition);
 	DECL_FUN(getVelocity);
 	DECL_FUN(isOnGround);
+	DECL_FUN(isInvisible);
+	DECL_FUN(isInWater);
+	DECL_FUN(isInLava);
+	DECL_FUN(isSneaking);
 	DECL_FUN(getSize);
 	DECL_FUN(toString);
 	DECL_FUN(getViewAngles);

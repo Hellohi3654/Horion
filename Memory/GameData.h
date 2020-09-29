@@ -28,6 +28,13 @@ enum DATAPACKET_CMD : int {
 	CMD_LOG
 };
 
+enum GAMEVERSION : int {
+	g_1_16_0 = 0,
+	g_1_16_1 = 1,
+	g_1_16_10 = 10,
+	g_1_16_20 = 20
+};
+
 struct HorionDataPacket {
 	DATAPACKET_CMD cmd;
 	int params[5] = {0};
@@ -95,6 +102,7 @@ private:
 	AccountInformation accountInformation = AccountInformation::asGuest();
 	static void retrieveClientInstance();
 	TextHolder* fakeName;
+	GAMEVERSION version;
 
 public:
 	NetworkedData networkedData;
@@ -115,8 +123,8 @@ public:
 	static void EntityList_tick(C_EntityList* list);
 	static void setHIDController(C_HIDController* Hid);
 	static void setRakNetInstance(C_RakNetInstance* raknet);
-	static TextHolder* getGameVersion();
 	static void log(const char* fmt, ...);
+	void checkGameVersion();
 	float fov = 0.f;
 	int fps = 0;
 	int frameCount = 0;
@@ -186,10 +194,8 @@ public:
 	inline bool allowWIPFeatures() {
 #ifdef _DEBUG
 		return true;
-#elif defined _BETA
-		return isAllowingWIPFeatures;
 #else
-		return false;
+		return isAllowingWIPFeatures;
 #endif
 	}
 	inline void setAllowWIPFeatures(bool enable = false) { isAllowingWIPFeatures = enable; };
@@ -213,18 +219,17 @@ public:
 	inline C_ClientInstance* getClientInstance() { return clientInstance; };
 	inline C_GuiData* getGuiData() { return clientInstance->getGuiData(); };
 	inline C_LocalPlayer* getLocalPlayer() {
-		#ifdef _BETA
+		/*#ifdef _BETA
 		unsigned int converted = networkedData.localPlayerOffset ^ networkedData.xorKey;
-		if (networkedData.localPlayerOffset < 0xA0 || converted < 0xA0 || converted > 0x132 || networkedData.dataSet == false)
+		if (networkedData.localPlayerOffset < 0x110 || converted < 0x125 || converted > 0x191 || networkedData.dataSet == false)
 			localPlayer = nullptr;
 		else
 			localPlayer = *reinterpret_cast<C_LocalPlayer**>(reinterpret_cast<__int64>(clientInstance) + converted);
 		
-		#else
-		//localPlayer = *reinterpret_cast<C_LocalPlayer**>(reinterpret_cast<__int64>(clientInstance) + 0xF0);
+		#else*/
 		localPlayer = clientInstance->localPlayer;
 		
-		#endif
+		//#endif
 		
 		if (localPlayer == nullptr)
 			gameMode = nullptr;
@@ -255,6 +260,7 @@ public:
 	int getFPS() { return fps; };
 	int getLeftCPS() { return cpsLeft; };
 	int getRightCPS() { return cpsRight; };
+	GAMEVERSION getVersion() { return version; };
 };
 
 extern GameData g_Data;

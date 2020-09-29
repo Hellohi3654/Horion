@@ -19,7 +19,6 @@ bool Scaffold::tryScaffold(vec3_t blockBelow) {
 	C_Block* block = g_Data.getLocalPlayer()->region->getBlock(vec3_ti(blockBelow));
 	C_BlockLegacy* blockLegacy = *(block->blockLegacy);
 	if (blockLegacy->material->isReplaceable) {
-
 		vec3_ti blok(blockBelow);
 
 		// Find neighbour
@@ -65,12 +64,14 @@ bool Scaffold::findBlock() {
 		C_ItemStack* stack = inv->getItemStack(n);
 		if (stack->item != nullptr) {
 			if ((*stack->item)->isBlock() && (*stack->item)->itemId != 0) {
-				auto a = C_MobEquipmentPacket(id, *stack, n, n);
+				C_MobEquipmentPacket a(id, *stack, n, n);
 				g_Data.getClientInstance()->loopbackPacketSender->sendToServer(&a);
 				return true;
 			}
 		}
 	}
+	C_MobEquipmentPacket a(id, *g_Data.getLocalPlayer()->getSelectedItem(), supplies->selectedHotbarSlot, supplies->selectedHotbarSlot);
+	g_Data.getClientInstance()->loopbackPacketSender->sendToServer(&a);
 	return false;
 }
 
@@ -79,6 +80,7 @@ void Scaffold::onTick(C_GameMode* gm) {
 		return;
 	if (!g_Data.canUseMoveKeys())
 		return;
+	
 	auto selectedItem = g_Data.getLocalPlayer()->getSelectedItem();
 	if ((selectedItem == nullptr || selectedItem->count == 0 || selectedItem->item == nullptr || !selectedItem->getItem()->isBlock()) && !spoof)  // Block in hand?
 		return;
@@ -90,7 +92,7 @@ void Scaffold::onTick(C_GameMode* gm) {
 	// Adjustment by velocity
 	float speed = g_Data.getLocalPlayer()->velocity.magnitudexz();
 	vec3_t vel = g_Data.getLocalPlayer()->velocity;
-	vel.normalize();  // Only use values from 0 - 1
+	vel = vel.normalize();  // Only use values from 0 - 1
 
 	if (!tryScaffold(blockBelow)) {
 		if (speed > 0.05f) {  // Are we actually walking?
@@ -105,4 +107,13 @@ void Scaffold::onTick(C_GameMode* gm) {
 			}
 		}
 	}
+}
+
+void Scaffold::onDisable() {
+	if (g_Data.getLocalPlayer() == nullptr)
+		return;
+	__int64 id = *g_Data.getLocalPlayer()->getUniqueId();
+	C_PlayerInventoryProxy* supplies = g_Data.getLocalPlayer()->getSupplies();
+	C_MobEquipmentPacket a(id, *g_Data.getLocalPlayer()->getSelectedItem(), supplies->selectedHotbarSlot, supplies->selectedHotbarSlot);
+	g_Data.getClientInstance()->loopbackPacketSender->sendToServer(&a);
 }

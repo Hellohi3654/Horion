@@ -64,7 +64,7 @@ void ModuleManager::initModules() {
 		this->moduleList.push_back(std::shared_ptr<IModule>(new FastEat()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new Jesus()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new AutoArmor()));
-		this->moduleList.push_back(std::shared_ptr<IModule>(new InfiniteBlockReach()));
+		this->moduleList.push_back(std::shared_ptr<IModule>(new ExtendedBlockReach()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new AutoClicker()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new NameTags()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new Criticals()));
@@ -89,23 +89,24 @@ void ModuleManager::initModules() {
 		this->moduleList.push_back(std::shared_ptr<IModule>(new Zoom()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new Teams()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new Nbt()));
-		this->moduleList.push_back(std::shared_ptr<IModule>(new Godmode()));
+		//this->moduleList.push_back(std::shared_ptr<IModule>(new Godmode()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new Freelook()));
-		//this->moduleList.push_back(std::shared_ptr<IModule>(new AutoSneak())); broken
+		this->moduleList.push_back(std::shared_ptr<IModule>(new AutoSneak()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new NoHurtcam()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new AntiImmobile()));
+		this->moduleList.push_back(std::shared_ptr<IModule>(new	NoPaintingCrash()));
+		this->moduleList.push_back(std::shared_ptr<IModule>(new TimeChanger()));
+		this->moduleList.push_back(std::shared_ptr<IModule>(new	Spider()));
+		this->moduleList.push_back(std::shared_ptr<IModule>(new	Compass()));
 
-#if defined(_BETA) or defined(_DEBUG)
-		this->moduleList.push_back(std::shared_ptr<IModule>(new ForceOpenCommandBlock()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new FollowPathModule()));
-#endif
 
 #ifdef _DEBUG
 		this->moduleList.push_back(std::shared_ptr<IModule>(new PacketLogger()));
 		this->moduleList.push_back(std::shared_ptr<IModule>(new TestModule()));
 #endif
 
-		// Sort module alphabetically
+		// Sort modules alphabetically
 		std::sort(moduleList.begin(), moduleList.end(), [](auto lhs, auto rhs) {
 			auto current = lhs;
 			auto other = rhs;

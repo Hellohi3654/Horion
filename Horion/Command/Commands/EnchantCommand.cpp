@@ -85,9 +85,8 @@ bool EnchantCommand::execute(std::vector<std::string>* args) {
 			firstAction = new C_InventoryAction(supplies->selectedHotbarSlot, item, nullptr);
 			if (strcmp(g_Data.getRakNetInstance()->serverIp.getText(), "mco.mineplex.com") == 0)
 				secondAction = new C_InventoryAction(0, nullptr, item, 32766, 100);
-			else {
+			else 
 				secondAction = new C_InventoryAction(0, nullptr, item, 507, 99999);
-			}
 			manager->addInventoryAction(*firstAction);
 			manager->addInventoryAction(*secondAction);
 			delete firstAction;
@@ -101,7 +100,11 @@ bool EnchantCommand::execute(std::vector<std::string>* args) {
 
 	static getEnchantsFromUserData_t getEnchantsFromUserData = reinterpret_cast<getEnchantsFromUserData_t>(FindSignature("48 8B C4 55 57 41 54 41 56 41 57 48 8D 68 ?? 48 ?? ?? ?? ?? ?? ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? 48 89 58 ?? 48 89 70 ?? 0F 29 70 C8 4C 8B E2 4C 8B F9 48 89 54 24 ?? 33 F6"));
 	static addEnchant_t addEnchant = reinterpret_cast<addEnchant_t>(FindSignature("48 89 5C 24 ?? 48 89 54 24 ?? 57 48 83 EC ?? 45 0F"));
-	static saveEnchantsToUserData_t saveEnchantsToUserData = reinterpret_cast<saveEnchantsToUserData_t>(FindSignature("48 8B C4 55 57 41 56 48 8D 68 ?? 48 ?? ?? ?? ?? ?? ?? 48 ?? ?? ?? ?? ?? ?? ?? 48 89 58 ?? 48 89 70 ?? 48 8B FA 4C 8B C1 48 8B 41 ?? 48 85 C0 74 25"));
+
+	static saveEnchantsToUserData_t saveEnchantsToUserData = 0x0;
+	if (!saveEnchantsToUserData) {
+		saveEnchantsToUserData = reinterpret_cast<saveEnchantsToUserData_t>(FindSignature("40 57 48 81 EC ?? ?? ?? ?? 48 C7 44 24 ?? ?? ?? ?? ?? 48 89 9C 24 ?? ?? ?? ?? 48 8B FA 4C 8B C1 48 8B 41 ?? 48 85 C0 74 29 48 83 38 ?? 74 23 48 8D 42 ?? 48 83 C2 50"));
+	}
 
 	if (strcmp(args->at(1).c_str(), "all") == 0) {
 		for (int i = 0; i < 38; i++) {
@@ -116,9 +119,9 @@ bool EnchantCommand::execute(std::vector<std::string>* args) {
 			if (addEnchant(EnchantData, enchantPair)) {  // Upper 4 bytes = level, lower 4 bytes = enchant type
 				saveEnchantsToUserData(item, EnchantData);
 				__int64 proxy = reinterpret_cast<__int64>(g_Data.getLocalPlayer()->getSupplies());
-				if (!*(uint8_t*)(proxy + 160))
-					(*(void(__fastcall**)(unsigned long long, unsigned long long, C_ItemStack*))(**(unsigned long long**)(proxy + 168) + 64i64))(
-						*(unsigned long long*)(proxy + 168),
+				if (!*(uint8_t*)(proxy + 168))
+					(*(void(__fastcall**)(unsigned long long, unsigned long long, C_ItemStack*))(**(unsigned long long**)(proxy + 176) + 72i64))(
+						*(unsigned long long*)(proxy + 176),
 						*(unsigned int*)(proxy + 16),
 						item);  // Player::selectItem
 
@@ -139,9 +142,9 @@ bool EnchantCommand::execute(std::vector<std::string>* args) {
 		if (addEnchant(EnchantData, enchantPair)) {  // Upper 4 bytes = level, lower 4 bytes = enchant type
 			saveEnchantsToUserData(item, EnchantData);
 			__int64 proxy = reinterpret_cast<__int64>(g_Data.getLocalPlayer()->getSupplies());
-			if (!*(uint8_t*)(proxy + 160))
-				(*(void(__fastcall**)(unsigned long long, unsigned long long, C_ItemStack*))(**(unsigned long long**)(proxy + 168) + 64i64))(
-					*(unsigned long long*)(proxy + 168),
+			if (!*(uint8_t*)(proxy + 168))
+				(*(void(__fastcall**)(unsigned long long, unsigned long long, C_ItemStack*))(**(unsigned long long**)(proxy + 176) + 72i64))(
+					*(unsigned long long*)(proxy + 176),
 					*(unsigned int*)(proxy + 16),
 					item);  // Player::selectItem
 

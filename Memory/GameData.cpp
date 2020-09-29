@@ -8,29 +8,37 @@ GameData g_Data;
 
 void GameData::retrieveClientInstance() {
 	static uintptr_t clientInstanceOffset = 0x0;
+	uintptr_t sigOffset = 0x0;
 	if (clientInstanceOffset == 0x0) {
-		uintptr_t sigOffset = FindSignature("48 8B 0D ?? ?? ?? ?? 48 8B 01 FF 90 ?? ?? ?? ?? 4C 8B E0");
+		sigOffset = FindSignature("48 8B 1D ?? ?? ?? ?? 48 8B 3D ?? ?? ?? ?? 48 3B DF 74 23 66 90");
 		if (sigOffset != 0x0) {
 			int offset = *reinterpret_cast<int*>((sigOffset + 3));                                                 // Get Offset from code
 			clientInstanceOffset = sigOffset - g_Data.gameModule->ptrBase + offset + /*length of instruction*/ 7;  // Offset is relative
 			logF("clinet: %llX", clientInstanceOffset);
 		}
 	}
-	
-	g_Data.clientInstance = reinterpret_cast<C_ClientInstance*>(g_Data.slimMem->ReadPtr<uintptr_t*>(g_Data.gameModule->ptrBase + clientInstanceOffset, {0x0, 0x78, 0x160}));
+	g_Data.clientInstance = reinterpret_cast<C_ClientInstance*>(g_Data.slimMem->ReadPtr<uintptr_t*>(g_Data.gameModule->ptrBase + clientInstanceOffset, {0x0, 0x0, 0x380, 0x10}));
+
 #ifdef _DEBUG
 	if (g_Data.clientInstance == 0)
 		throw std::exception("Client Instance is 0");
 #endif
-
 }
 
-TextHolder* GameData::getGameVersion() {
-	static uintptr_t sigOffset = 0x0;
-	if (sigOffset == 0x0)
+void GameData::checkGameVersion() {
+	static uintptr_t sigOffset = 0;
+	if (sigOffset == 0)
 		sigOffset = FindSignature("48 8D 1D ?? ?? ?? ?? 8B 04 0A 39 05 ?? ?? ?? ?? 0F 8F ?? ?? ?? ?? 4C 8B CB 48 83 3D ?? ?? ?? ?? 10 4C 0F 43 0D ?? ?? ?? ??");
 	int offset = *reinterpret_cast<int*>((sigOffset + 3));
-	return reinterpret_cast<TextHolder*>(sigOffset + offset + 7);
+	std::string ver = reinterpret_cast<TextHolder*>(sigOffset + offset + 7)->getText();
+	auto lastDot = ver.find_last_of(".");
+	if (lastDot == std::string::npos || lastDot >= ver.size() - 1) {
+		this->version = static_cast<GAMEVERSION>(0);
+		return;
+	}
+
+	int num = std::stoi(ver.substr(lastDot + 1));
+	this->version = static_cast<GAMEVERSION>(num);
 }
 
 bool GameData::canUseMoveKeys() {
@@ -110,7 +118,7 @@ void GameData::updateGameData(C_GameMode* gameMode) {
 		if (g_Data.localPlayer != nullptr) {
 			C_GuiData* guiData = g_Data.clientInstance->getGuiData();
 
-
+			
 			if (guiData != nullptr) {
 				{
 					auto vecLock = Logger::GetTextToPrintLock();
@@ -170,7 +178,7 @@ void GameData::forEachEntity(std::function<void(C_Entity*, bool)> callback) {
 	{
 		// MultiplayerLevel::directTickEntities
 		__int64 region = reinterpret_cast<__int64>(g_Data.getLocalPlayer()->region);
-		__int64* entityIdMap = *(__int64**)(*(__int64*)(region + 0x20) + 0x150i64);
+		__int64* entityIdMap = *(__int64**)(*(__int64*)(region + 0x20) + 0x120i64);
 		for (__int64* i = (__int64*)*entityIdMap; i != entityIdMap; i = (__int64*)*i) {
 			__int64 actor = i[3];
 			// !isRemoved() && !isGlobal()
@@ -193,8 +201,7 @@ void GameData::forEachEntity(std::function<void(C_Entity*, bool)> callback) {
 #endif
 		} else {
 			size_t listSize = entList->getListSize();
-			//logF("listSize: %li", listSize);
-			if (listSize < 5000 && listSize > 1) {
+			if (listSize < 5000 && listSize > 0) {
 				for (size_t i = 0; i < listSize; i++) {
 					C_Entity* current = entList->get(i);
 					if (std::find(tickedEntities.begin(), tickedEntities.end(), current) == tickedEntities.end()) {

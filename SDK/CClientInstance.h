@@ -15,9 +15,9 @@ public:
 
 class LevelRenderer {
 private:
-	char pad_0x0000[0x860];  //0x0000
+	char pad_0x0000[0x870];  //0x0000
 public:
-	vec3_t origin;  //0x0860
+	vec3_t origin;  //0x0870
 
 	__int64 getLevelRendererPlayer(){
 		return reinterpret_cast<__int64>(this) + 0x310;
@@ -40,43 +40,36 @@ public:
 
 struct C_FontRepository {
 private:
-	uintptr_t* shared_ptr_vtable;       // 0x0000
-	int idk1;                           // 0x0008
-	int idk2;                           // 0x000C
-	uintptr_t* font_repository_vtable;  // 0x0010
-	void* appPlatform;                  // 0x0018
-	void* ptrToSelf;                    // 0x0020
-	void* ptrToSelfSharedPtr;           // 0x0028
-	__int64 unknown;                    // 0x0030
+	uintptr_t* font_repository_vtable;  // 0x0000
+	__int64 pad;                        // 0x0008
+	void* ptrToSelf;                    // 0x0010
+	void* ptrToSelfSharedPtr;           // 0x0018
+	__int64 pad2;                       // 0x0020
 public:
-	C_FontRepository_FontList* fontList;   //0x0038
-	C_FontRepository_FontList* fontList1;  //0x0040
+	C_FontRepository_FontList* fontList;   //0x0028
+	//C_FontRepository_FontList* fontList1;  //0x0040
 };
 
 class MinecraftGame {
 private:
-	char filler[0xA0];  //0x0000
+	char filler[0x140];  //0x0000
 public:
-	uintptr_t defaultFont;  //0x00A0
+	C_FontRepository* fontRepository; //0x140
 private:
-	char pad_0x00A8[0x78];  //0x00A8
-public:
-	C_FontRepository* fontRepository;  //0x120
-private:
-	char pad_0x128[0x28];  //0x128
+	char pad_0x148[0x8]; //0x148
 public:
 	C_FontRepository* fontRepository1;  //0x150
 private:
-	char pad_0x0158[0xC0];  //0x158
+	char pad_0x128[0x108];  //0x148
 public:
-	bool canUseKeys;  //0x0218
+	bool canUseKeys;  //0x250
 
 	C_Font* getTheGoodFontThankYou() {
 		return fontRepository->fontList->fontEntries[7].font;
 	};
 
 	C_Font* getOldFont() {
-		return fontRepository1->fontList1->fontEntries[6].font;
+		return fontRepository1->fontList->fontEntries[7].font;
 	};
 
 	C_Font* getTheBetterFontYes() {
@@ -145,54 +138,53 @@ class C_CameraManager;
 
 class C_ClientInstance {
 private:
-	char firstPad[0x98];  //0x0008
+	char firstPad[0x90];  //0x0008
 public:
-	MinecraftGame* minecraftGame;  
+	MinecraftGame* minecraftGame;  //0x0098
 private:
-	MinecraftGame* N0000080C;  
+	MinecraftGame* N0000080C;  //0x00A0
 public:
-	MinecraftGame* N0000080D;  
+	MinecraftGame* N0000080D;  //0x00A8
 private:
-	MinecraftGame* N0000080E;  
+	MinecraftGame* N0000080E;  //0x00B0
 public:
-	Minecraft* minecraft; 
+	Minecraft* minecraft;  //0x00B8
 private:
-	char pad_0x0068[0x8];  
+	char pad_0x0068[0x8];  //0x00C0
 public:
-	LevelRenderer* levelRenderer; 
+	LevelRenderer* levelRenderer;  //0x00C8
 private:
-	char pad_0x0078[0x8];
+	char pad_0x0078[0x8];  //0x00D0
 public:
-	C_LoopbackPacketSender* loopbackPacketSender;  
+	C_LoopbackPacketSender* loopbackPacketSender;  //0x00D8
 private:
-	char pad_0x0088[0x18];  
+	char pad_0x0088[0x18];  //0x00E0
 public:
-	PtrToGameSettings1* ptr; 
+	PtrToGameSettings1* ptr;  //0x00F8
 private:
-	char pad_0x00B0[0x8];  
+	char pad_0x00B0[0x8];  //0x0100
 public:
-	HitDetectSystem* hitDetectSystem; 
+	HitDetectSystem* hitDetectSystem;  //0x0108
 private:
-	char pad_0x00B8[0x30];  
+	char pad_0x00B8[0x30];  //0x0110
 public:
-	C_LocalPlayer* localPlayer; 
+	C_LocalPlayer* localPlayer;  //0x0140
 private:
-	char pad[0x380]; 
+	char pad[0x380]; // 0x0148
 public:
 	struct {
-		char pad[0x228];
+		char pad[0x238];
 		struct {
 			__int64 materialPtr;
 			size_t refCount;
 		} entityLineMaterial;
-	} *itemInHandRenderer; // 0x0478
+	} *itemInHandRenderer; // 0x04C8
 
 private:
 	virtual __int64 destructorClientInstance();
 	// Duplicate destructor
 	virtual __int64 onInitMinecraftGame(void);
 	virtual __int64 onDestroyMinecraftGame(void);
-	virtual __int64 coolSub(); // rough guess where this function is
 	virtual __int64 init(__int64*, __int64&, __int64&, __int64&, __int64&, int);
 	virtual __int64 initSceneFactory(__int64*);
 	virtual __int64 initGraphics(void);
@@ -307,7 +299,7 @@ public:
 	virtual void setCreditsCallback(__int64);
 	virtual void setupTransitionForCredits(__int64);
 
-//private:
+private:
 	virtual __int64 refreshScreenSizeData(void);
 	virtual __int64 onScreenSizeChanged(int, int, float);
 	virtual __int64 onGuiScaleOffsetChanged(void);
@@ -315,14 +307,14 @@ public:
 	virtual __int64 quit(std::string const&, std::string const&);
 	virtual __int64 getMinecraftGame(void) const;
 	virtual __int64 getAutomationClient(void) const;
-	//virtual __int64 getScreenshotStreamer(void) const;
+	virtual __int64 getScreenshotStreamer(void) const;
 	virtual __int64 getEventing(void) const;
-	virtual __int64 sub_1400CA2E0();
-	virtual __int64 sub_1400CA2E8();
-	virtual __int64 sub_1400CA2F0();
-	/*virtual C_Font* getFont(void) const;
+	virtual __int64 sub_1400CA2E0(__int64 a1);
+	virtual __int64 sub_1400CA2E8(__int64 a1);
+	virtual __int64 sub_1400CA2F0(__int64 a1);
+	virtual C_Font* getFont(void) const;
 	virtual C_Font* getRuneFont(void) const;
-	virtual C_Font* getUnicodeFont(void) const;*/
+	virtual C_Font* getUnicodeFont(void) const;
 	virtual __int64 getGeometryGroup(void) const;
 	virtual __int64 getMultiplayerServiceManager(void) const;
 	virtual __int64 getLocalServerLevel(void);
@@ -424,11 +416,11 @@ public:
 	virtual bool isPreGame(void) const;
 	virtual bool isInMultiplayerGame(void) const;
 	virtual bool isMultiC_PlayerClient(void) const;
-
-private:
+	virtual __int64 sub_14012F590() const;
+	virtual __int64 sub_14012F4D0() const;
 	virtual __int64 getOptions(void);
 	virtual __int64 getOptions(void) const;
-	virtual __int64 getOptionsPtr(void);
+	//virtual __int64 getOptionsPtr(void);
 	virtual __int64 getUser(void);
 	virtual __int64 getUser(void) const;
 	virtual __int64 getGameRenderer(void) const;
@@ -469,7 +461,6 @@ private:
 public:
 	virtual void setUICursorTexture(__int64);
 
-private:
 	virtual __int64 getUICursorTexture(void) const;
 	virtual __int64 getCamera(void);
 	virtual __int64 getShaderColor(void);
@@ -479,7 +470,6 @@ private:
 	virtual __int64 shouldRenderUICursor(void) const;
 	virtual bool sub_1400CD3B0(void);
 	virtual bool sub_1400CD3B1(void);
-	virtual __int64 onLatencyUpdated(__int64 const&);
 	virtual __int64 getGuiScale(void) const;
 	virtual __int64 getGuiScaleOption(void) const;
 	virtual __int64 getGuiScaleOffset(void) const;
@@ -513,6 +503,7 @@ private:
 	virtual __int64 getCurrentSceneStack(void);
 	virtual __int64 getCurrentUIRouter(void);
 	virtual __int64 getCurrentUIRouter(void) const;
+	virtual __int64 sub_14012BAB0(void) const;
 	virtual __int64 prepareSceneFor(__int64);
 	virtual __int64 getCachedScenes(void);
 
@@ -725,23 +716,23 @@ public:
 	glmatrixf* getRefDef() {
 		uintptr_t _this = reinterpret_cast<uintptr_t>(this);
 		//logF("refderf %llX", _this + 0x258);
-		return reinterpret_cast<glmatrixf*>(_this + 0x298);
+		return reinterpret_cast<glmatrixf*>(_this + 0x2E8);
 	};
 
 	vec2_t* getMousePos() {
 		uintptr_t _this = reinterpret_cast<uintptr_t>(this);
-		return reinterpret_cast<vec2_t*>(_this + 0x400);
+		return reinterpret_cast<vec2_t*>(_this + 0x450);
 	}
 
 	vec2_t getFov() {
 		uintptr_t _this = reinterpret_cast<uintptr_t>(this);
 		vec2_t fov;
-		fov.x = *reinterpret_cast<float*>(_this + 0x600);
-		fov.y = *reinterpret_cast<float*>(_this + 0x614);
+		fov.x = *reinterpret_cast<float*>(_this + 0x650);
+		fov.y = *reinterpret_cast<float*>(_this + 0x664);
 		return fov;
 	}
 
-	/*C_Font* _getFont() {
+	C_Font* _getFont() {
 		return this->getFont();
 	}
 
@@ -751,7 +742,7 @@ public:
 
 	C_Font* _getUnicodeFont() {
 		return this->getUnicodeFont();
-	}*/
+	}
 
 	inline C_GameSettingsInput* getGameSettingsInput() { return this->ptr->ptr->ptr->settingsInput; };
 };
